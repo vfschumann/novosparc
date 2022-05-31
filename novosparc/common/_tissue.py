@@ -2,6 +2,7 @@ import numpy as np
 import os
 import novosparc
 from scipy.spatial.distance import cdist
+import scipy
 from contextlib import redirect_stdout
 import io
 import pandas as pd
@@ -160,9 +161,12 @@ class Tissue():
 			print('Using epsilon: %.08f' % epsilon)
 
 		self.epsilon = epsilon
-		sdge = np.dot(self.dge.T, gw)
+		# transformation to ndarry bc np.dot() on mixed matrix types throws bugs
+		dge_array = scipy.sparse.csr_matrix.toarray(self.dge)
+		sdge = np.dot(dge_array.T, gw)
 		self.gw = gw
 		self.sdge = sdge
+		self.dge = dge_array
 
 	def calculate_sdge_for_all_genes(self):
 		raw_data = self.dataset.raw.to_adata()
