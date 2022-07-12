@@ -87,7 +87,7 @@ class Tissue():
 
 	def setup_reconstruction(self, markers_to_use=None, atlas_matrix=None, num_neighbors_s=5, num_neighbors_t=5, verbose=True):
 		"""
-		Set cost matrices for reconstruction. If there are marker genes and an reference atlas matrix, these
+		Set cost matrices for reconstruction. If there are marker genes and a reference atlas matrix, these
 		can be used as well.
 		markers_to_use  -- indices of the marker genes
 		atlas_matrix    -- reference atlas corresponding to markers_to_use
@@ -134,6 +134,7 @@ class Tissue():
 		warning_msg = 'Warning: numerical errors at iteration '
 		first_pass = True
 
+		# docu ToDo: What's happening here?
 		while first_pass or (epsilon < max_epsilon):
 			f = io.StringIO()
 
@@ -144,6 +145,7 @@ class Tissue():
 												  'square_loss', epsilon=epsilon, verbose=verbose, random_ini=random_ini)
 			out = f.getvalue()
 
+			# docu ToDo: What's happening here?
 			if warning_msg not in out:
 				f.close()
 				break
@@ -162,12 +164,14 @@ class Tissue():
 
 		self.epsilon = epsilon
 		# transformation to ndarry bc np.dot() on mixed matrix types throws bugs
+		# ToDo this should be a dynamic check
 		dge_array = scipy.sparse.csr_matrix.toarray(self.dge)
 		sdge = np.dot(dge_array.T, gw)
 		self.gw = gw
 		self.sdge = sdge
 		self.dge = dge_array
 
+	# When is this used? Or what is it for?
 	def calculate_sdge_for_all_genes(self):
 		raw_data = self.dataset.raw.to_adata()
 		dge_full = raw_data.X
