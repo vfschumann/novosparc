@@ -22,3 +22,9 @@ var/
 *.egg
 
 docs/_build/
+
+# big data
+Vic/*.h5ad
+Vic/*.csv
+Vic/*/*.h5ad
+Vic/*/*.csv
