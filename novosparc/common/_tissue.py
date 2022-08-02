@@ -4,11 +4,11 @@ import novosparc
 from scipy.spatial.distance import cdist
 from scipy.stats import zscore
 import scipy
+from sklearn.mixture import BayesianGaussianMixture
 from contextlib import redirect_stdout
 import io
 import pandas as pd
 import operator
-
 
 
 class Tissue():
@@ -211,13 +211,18 @@ class Tissue():
 
         self.spatially_informative_genes = results
 
-    def cleaning_expression_data(self, expression_matrix=None, normalization=None, covariance_prior=None,
-                                  selected_genes=None, plotting=None):
+    def cleaning_expression_data(self, dataset=None, expression_matrix=None, normalization=None, cov_prior=None,
+                                 selected_genes=None, plotting=None):
+
+        # TODO: not sure if it's proper/makes sense to use the anndata dataset here already. Probably not. But it's
+        #  the version I have right now for creating a gene subset. Has to be change later if necessary
+
         """
+        :param dataset              -- Scanpy AnnData with 'spatial' matrix in obsm containing the spatial coordinates of the tissue
         :param expression_matrix:   -- either dge or sdge
         :param normalization:       -- reconstructed data has to be normalized first, raw-data too if not previously
                                        done, choose from 'minmax', 'log', 'zscore'
-        :param covariance_prior:    -- change to widen the applied fit curves, e.g. to capture relevant
+        :param cov_prior:    -- change to widen the applied fit curves, e.g. to capture relevant
                                        low-expression genes
         :param selected_genes:      -- subset of genes to check. if None, calculate for every gene
         :param plotting:            -- when list of genes given plot cntrl plot with mapping before and after filtering
@@ -229,14 +234,59 @@ class Tissue():
         if normalization not in possible_normalization:
             raise ValueError("Invalid normalization method. Expected one of: %s" % possible_normalization)
 
+        # subset matrix
+        if selected_genes is None:
+            used_matrix = expression_matrix
+        elif isinstance(selected_genes, list) & len(selected_genes) >= 1:
+            subset_cols = []
+            for i, gene in enumerate(selected_genes):
+                if gene in dataset.var_names:
+                    subset_cols.append(np.asarray(dataset[:, gene].X).reshape(-1, 1))
+            used_matrix = np.concatenate(subset_cols, axis=1)
+        else:
+            raise ValueError("Invalid input for selected_genes. When given then it has to be a list with genes that"
+                             "should be tested. Else give non and cleaning will performed on the whole matrix.")
+
         # normalize data
         if normalization == 'minmax':
-            uncleaned_matrix = expression_matrix
+            uncleaned_matrix = (used_matrix - np.min(used_matrix)) / \
+                               (np.max(used_matrix) - np.min(used_matrix))
         elif normalization == 'log':
-            uncleaned_matrix = np.log(expression_matrix)
+            uncleaned_matrix = np.log(used_matrix)
         elif normalization == 'zscore':
-            uncleaned_matrix = zscore(expression_matrix)
+            uncleaned_matrix = zscore(used_matrix)
         else:
-            uncleaned_matrix = expression_matrix
+            uncleaned_matrix = used_matrix
 
+        # apply model and filtering
+        modded_cols = []
 
+        for column in uncleaned_matrix.T:
+            # apply model
+            gmm = BayesianGaussianMixture(n_components=2, verbose=1,
+                                          covariance_prior=[(200,)],
+                                          ).fit(sdge_small.reshape(-1, 1))
+            # get labels< for distributions
+            labels = gmm.predict(column.reshape(-1, 1))
+
+            # merge labels column with original expression value column
+            label_assignment = np.concatenate((column.reshape(-1, 1),
+                                               labels.reshape(-1, 1)), axis=1)
+
+            # check how many labels and how many values per label
+            vl_cnts = pd.Series(labels).value_counts()
+
+            # TODO: I would like to write this stuff without those magic numbers (if even possible in python?)
+            # only apply sorting when 2 distributions where modelled
+            if len(vl_cnts) > 1:
+                # when the 0 dist is the dist of choice, labels have to be inverted for multiplication
+                if vl_cnts[0] < vl_cnts[1]:
+                    # invert labels
+                    label_assignment[:, 1] = np.logical_not(label_assignment[:, 1]).astype(int)
+                # multiply expression values with label values so that the 0 dist values are effectively removed
+                label_assignment[:, 0] *= label_assignment[:, 1]
+
+            # build a list of modified columns
+            modded_cols.append(label_assignment[:, 0].reshape(-1, 1))
+
+        modded_matrix = np.concatenate(modded_cols, axis=1)
