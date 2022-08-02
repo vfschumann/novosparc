@@ -47,6 +47,7 @@ class Tissue():
         self.costs = {'expression': np.ones((self.num_cells, self.num_cells)),
                       'locations': np.ones((self.num_locations, self.num_locations)),
                       'markers': np.ones((self.num_cells, self.num_locations))}
+        self.cleaned_dge = None
 
     def setup_smooth_costs(self, dge_rep=None, num_neighbors_s=5, num_neighbors_t=5,
                            locations_metric='minkowski', locations_metric_p=2,
@@ -222,8 +223,8 @@ class Tissue():
         :param expression_matrix:   -- either dge or sdge
         :param normalization:       -- reconstructed data has to be normalized first, raw-data too if not previously
                                        done, choose from 'minmax', 'log', 'zscore'
-        :param cov_prior:    -- change to widen the applied fit curves, e.g. to capture relevant
-                                       low-expression genes
+        :param cov_prior:           -- change to widen the applied fit curves, e.g. to capture relevant
+                                       low-expression genes, has to be given in the form: [(#,)]
         :param selected_genes:      -- subset of genes to check. if None, calculate for every gene
         :param plotting:            -- when list of genes given plot cntrl plot with mapping before and after filtering
         :return:                    -- tissue object with cleaned expression matrix
@@ -263,10 +264,14 @@ class Tissue():
 
         for column in uncleaned_matrix.T:
             # apply model
-            gmm = BayesianGaussianMixture(n_components=2, verbose=1,
-                                          covariance_prior=[(200,)],
-                                          ).fit(sdge_small.reshape(-1, 1))
-            # get labels< for distributions
+            if cov_prior is None:
+                gmm = BayesianGaussianMixture(n_components=2, ).fit(column.reshape(-1, 1))
+            else:
+                # widen the fitted curves to include more expression values of the defaults distributions edges
+                gmm = BayesianGaussianMixture(n_components=2,
+                                              covariance_prior=cov_prior,
+                                              ).fit(column.reshape(-1, 1))
+            # get labels for distributions
             labels = gmm.predict(column.reshape(-1, 1))
 
             # merge labels column with original expression value column
@@ -290,3 +295,10 @@ class Tissue():
             modded_cols.append(label_assignment[:, 0].reshape(-1, 1))
 
         modded_matrix = np.concatenate(modded_cols, axis=1)
+
+        # optional plotting of cleaning results
+        # TODO have to think a bit more about this one how to do it properly (e.g. when/how to use the novosparc
+        #  plotting/embedding functions in here already. Or maybe this should be handled differnetly?
+
+        self.cleaned_dge = modded_matrix
+
