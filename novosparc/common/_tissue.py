@@ -2,11 +2,13 @@ import numpy as np
 import os
 import novosparc
 from scipy.spatial.distance import cdist
+from scipy.stats import zscore
 import scipy
 from contextlib import redirect_stdout
 import io
 import pandas as pd
 import operator
+
 
 
 class Tissue():
