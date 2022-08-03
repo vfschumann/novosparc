@@ -265,7 +265,7 @@ class Tissue():
         for column in uncleaned_matrix.T:
             # apply model
             if cov_prior is None:
-                gmm = BayesianGaussianMixture(n_components=2, ).fit(column.reshape(-1, 1))
+                gmm = BayesianGaussianMixture(n_components=2).fit(column.reshape(-1, 1))
             else:
                 # widen the fitted curves to include more expression values of the defaults distributions edges
                 gmm = BayesianGaussianMixture(n_components=2,
