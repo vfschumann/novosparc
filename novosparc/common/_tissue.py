@@ -260,6 +260,7 @@ class Tissue():
             uncleaned_matrix = used_matrix
 
         # transform to a pd dict for faster iteration
+        # TODO there should be a check for applying the transposion or not depending on wether the input is transposed or not
         uncleaned_matrix_dict = pd.DataFrame(uncleaned_matrix.T).to_dict('records')
 
         # apply model and filtering
@@ -304,8 +305,8 @@ class Tissue():
         modded_matrix = np.concatenate(modded_cols, axis=1)
 
         # optional plotting of cleaning results
-        # TODO have to think a bit more about this one how to do it properly (e.g. when/how to use the novosparc
-        #  plotting/embedding functions in here already. Or maybe this should be handled differnetly?
+        # TODO have to think a bit more about this one how to do it properly (e.g. when/how to use the novosparc also
+        #  not sure if this is really necessary when we have the option of using a subset - maybe just plotting manually is cleaner?
 
         self.cleaned_dge = modded_matrix
 
