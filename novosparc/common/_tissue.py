@@ -259,23 +259,30 @@ class Tissue():
         else:
             uncleaned_matrix = used_matrix
 
+        # transform to a pd dict for faster iteration
+        uncleaned_matrix_dict = pd.DataFrame(uncleaned_matrix.T).to_dict('records')
+
         # apply model and filtering
         modded_cols = []
 
-        for column in uncleaned_matrix.T:
+        for row in uncleaned_matrix_dict:
+
+            # transform to array
+            expression_values = np.asarray(list(row.values())).reshape(-1, 1)
+
             # apply model
             if cov_prior is None:
-                gmm = BayesianGaussianMixture(n_components=2).fit(column.reshape(-1, 1))
+                gmm = BayesianGaussianMixture(n_components=2).fit(expression_values)
             else:
                 # widen the fitted curves to include more expression values of the defaults distributions edges
                 gmm = BayesianGaussianMixture(n_components=2,
                                               covariance_prior=cov_prior,
-                                              ).fit(column.reshape(-1, 1))
+                                              ).fit(expression_values)
             # get labels for distributions
-            labels = gmm.predict(column.reshape(-1, 1))
+            labels = gmm.predict(expression_values)
 
             # merge labels column with original expression value column
-            label_assignment = np.concatenate((column.reshape(-1, 1),
+            label_assignment = np.concatenate((expression_values,
                                                labels.reshape(-1, 1)), axis=1)
 
             # check how many labels and how many values per label
