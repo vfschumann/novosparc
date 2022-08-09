@@ -167,18 +167,43 @@ class Tissue():
 
             first_pass = False
 
+        while first_pass or (epsilon < max_epsilon):
+            f = io.StringIO()
+
+            print('Trying with epsilon: ' + '{:.2e}'.format(epsilon))
+            with redirect_stdout(f):
+                gw = novosparc.rc._GWadjusted.gromov_wasserstein_adjusted_norm(cost_marker_genes, cost_expression,
+                                                                               cost_locations,
+                                                                               self.alpha_linear, self.p_expression,
+                                                                               self.p_locations,
+                                                                               'square_loss', epsilon=epsilon,
+                                                                               verbose=verbose, random_ini=random_ini)
+            out = f.getvalue()
+
+            if warning_msg not in out:
+                f.close()
+                break
+            else:
+                epsilon = epsilon * mult_fac
+                f.close()
+
+            if not search_epsilon:
+                break
+
+            first_pass = False
+
         if epsilon > ini_epsilon:
             epsilon = (epsilon / mult_fac)
             print('Using epsilon: %.08f' % epsilon)
 
         self.epsilon = epsilon
-        # transformation to ndarry bc np.dot() on mixed matrix types throws bugs
-        # ToDo this should be a dynamic check
-        dge_array = scipy.sparse.csr_matrix.toarray(self.dge)
-        sdge = np.dot(dge_array.T, gw)
+
+        if type(self.dge) is scipy.sparse.csr_matrix:
+            self.dge = scipy.sparse.csr_matrix.toarray(self.dge)
+
+        sdge = np.dot(self.dge.T, gw)
         self.gw = gw
         self.sdge = sdge
-        self.dge = dge_array
 
     # When is this used? Or what is it for?
     def calculate_sdge_for_all_genes(self):
@@ -309,4 +334,3 @@ class Tissue():
         #  not sure if this is really necessary when we have the option of using a subset - maybe just plotting manually is cleaner?
 
         self.cleaned_dge = modded_matrix
-
