@@ -329,8 +329,21 @@ class Tissue():
 
         modded_matrix = np.concatenate(modded_cols, axis=1)
 
+        # in case of subset was used, update the subsetted columns in the original data and return the full expression matrix
+        if selected_genes is not None:
+            try:
+                df_expression_matrix = pd.DataFrame(expression_matrix.T, columns=dataset.var_names)
+            except ValueError:
+                df_expression_matrix = pd.DataFrame(expression_matrix, columns=dataset.var_names)
+            df_modded_matrix = pd.DataFrame(modded_matrix, columns=selected_genes)
+            df_expression_matrix.update(df_modded_matrix)
+
+            modded_matrix_full = df_expression_matrix.to_numpy()
+        else:
+            modded_matrix_full = modded_matrix
+
         # optional plotting of cleaning results
         # TODO have to think a bit more about this one how to do it properly (e.g. when/how to use the novosparc also
         #  not sure if this is really necessary when we have the option of using a subset - maybe just plotting manually is cleaner?
 
-        self.cleaned_dge = modded_matrix
+        self.cleaned_dge = modded_matrix_full
