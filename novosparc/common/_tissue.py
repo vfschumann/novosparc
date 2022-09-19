@@ -242,6 +242,8 @@ class Tissue():
 
         # TODO: not sure if it's proper/makes sense to use the anndata dataset here already. Probably not. But it's
         #  the version I have right now for creating a gene subset. Has to be change later if necessary
+        # ToDo: I think I should add an **args too in order to enable to access all the other variables that are
+        #  accessible for BayesianGaussianMixture (?)
 
         """
         :param dataset              -- Scanpy AnnData with 'spatial' matrix in obsm containing the spatial coordinates of the tissue
