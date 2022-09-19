@@ -263,7 +263,7 @@ class Tissue():
         # subset matrix
         if selected_genes is None:
             used_matrix = expression_matrix
-        elif isinstance(selected_genes, list) & len(selected_genes) >= 1:
+        elif isinstance(selected_genes, list) and len(selected_genes) >= 1:
             subset_cols = []
             for i, gene in enumerate(selected_genes):
                 if gene in dataset.var_names:
