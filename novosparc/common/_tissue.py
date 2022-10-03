@@ -319,8 +319,9 @@ class Tissue():
             # TODO: I would like to write this stuff without those magic numbers (if even possible in python?)
             # only apply sorting when 2 distributions where modelled
             if len(vl_cnts) > 1:
-                # when the 0 dist is the dist of choice, labels have to be inverted for multiplication
-                if vl_cnts[0] < vl_cnts[1]:
+                # when the 0 dist is the dist oF choice (has the distribution with the higher values),
+                # labels have to be inverted for multiplication
+                if gmm.means_[0] > gmm.means_[1]:
                     # invert labels
                     label_assignment[:, 1] = np.logical_not(label_assignment[:, 1]).astype(int)
                 # multiply expression values with label values so that the 0 dist values are effectively removed
