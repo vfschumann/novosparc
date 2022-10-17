@@ -263,18 +263,22 @@ class Tissue():
             raise ValueError("Invalid normalization method. Expected one of: %s" % possible_normalization)
 
         # subset matrix
+        modded_gene_list = selected_genes # gene names for filtering
         if selected_genes is None:
             used_matrix = expression_matrix
         elif isinstance(selected_genes, list) and len(selected_genes) >= 1:
             subset_cols = []
             for i, gene in enumerate(selected_genes):
-                if gene in dataset.var_names:
+                if gene in dataset.var_names and not np.all((np.asarray(dataset[:, gene].X).reshape(-1, 1) == 0)):
                     subset_cols.append(np.asarray(dataset[:, gene].X).reshape(-1, 1))
-            used_matrix = np.concatenate(subset_cols, axis=1)
+                    used_matrix = np.concatenate(subset_cols, axis=1)
+                else:
+                    modded_gene_list.remove(gene)
+                    print("Expression array contained all-0 columns, which where removed")
         else:
             raise ValueError("Invalid input for selected_genes. When given then it has to be a list with genes that"
                              "should be tested. Else give non and cleaning will performed on the whole matrix.")
-
+        # ToDo: save the gene names that are sorted out so you can remove them later
         # normalize data
         if normalization == 'minmax':
             uncleaned_matrix = (used_matrix - np.min(used_matrix)) / \
@@ -333,12 +337,14 @@ class Tissue():
         modded_matrix = np.concatenate(modded_cols, axis=1)
 
         # in case of subset was used, update the subsetted columns in the original data and return the full expression matrix
+
         if selected_genes is not None:
             try:
+                # ToDo: here the columns should be the list of names without the filtered Gene names
                 df_expression_matrix = pd.DataFrame(expression_matrix.T, columns=dataset.var_names)
             except ValueError:
                 df_expression_matrix = pd.DataFrame(expression_matrix, columns=dataset.var_names)
-            df_modded_matrix = pd.DataFrame(modded_matrix, columns=selected_genes)
+            df_modded_matrix = pd.DataFrame(modded_matrix, columns=modded_gene_list)
             df_expression_matrix.update(df_modded_matrix)
 
             modded_matrix_full = df_expression_matrix.to_numpy()
