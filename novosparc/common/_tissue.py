@@ -263,7 +263,7 @@ class Tissue():
             raise ValueError("Invalid normalization method. Expected one of: %s" % possible_normalization)
 
         # subset matrix
-        modded_gene_list = selected_genes # gene names for filtering
+        modded_gene_list = selected_genes.copy() # gene names for filtering
         if selected_genes is None:
             used_matrix = expression_matrix
         elif isinstance(selected_genes, list) and len(selected_genes) >= 1:
