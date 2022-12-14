@@ -2,7 +2,7 @@ import importlib.util
 import sys
 # TODO I kinda hate to do it like this, bc that's not dynamic. Have to ask sometime how Enes does this....
 spec = importlib.util.spec_from_file_location("novosparc",
-                                              "/home/vfs/PycharmProjects/rajewskyLab/novosparc/novosparc/__init__.py")
+                                              "/novosparc/__init__.py")
 # spec = importlib.util.spec_from_file_location("novosparc",
 #                                               "/home/vschuma/PycharmProjects/novosparc/novosparc/__init__.py")
 novosparc = importlib.util.module_from_spec(spec)
@@ -32,7 +32,7 @@ from sim_score_funs import box_swarm_label
 # Read in Single Cell data
 
 # Reading expression data to scanpy AnnData (cells x genes)
-data_dir = '../../novosparc/datasets/drosophila_scRNAseq/'
+data_dir = '../../../novosparc/datasets/drosophila_scRNAseq/'
 data_path = os.path.join(data_dir, 'dge_normalized.txt')
 dataset = sc.read(data_path).T
 gene_names = dataset.var.index.tolist()
@@ -53,7 +53,7 @@ var_genes = list(is_var_gene.index[is_var_gene])
 
 ## Read in atlas
 # atlas settings
-atlas_dir = '../../novosparc/datasets/bdtnp/'
+atlas_dir = '../../../novosparc/datasets/bdtnp/'
 target_space_path = os.path.join(atlas_dir, 'geometry.txt')
 locations = pd.read_csv(target_space_path, sep=' ')
 type(locations)
