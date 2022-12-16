@@ -80,19 +80,21 @@ def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
 
 
 def embedding(dataset, color, title=None, size_x=None, size_y=None,
-                          pt_size=10, tit_size=15, dpi=100):
+                          pt_size=10, tit_size=15, dpi=100): # Fixme: all of this is fixed too - why??? Fix pls
     """
     Plots fields (color) of Scanpy AnnData object on spatial coordinates
     dataset -- Scanpy AnnData with 'spatial' matrix in obsm containing the spatial coordinates of the tissue
     color -- a list of fields - gene names or columns from obs to use for color
     """
+
+    # set plotting frame with number and size of plots
     title = color if title is None else title
     ncolor = len(color)
-    per_row = 3
+    per_row = 3 # Fixme: why is this hardcoded anyway? make it dynamic pls
     per_row = ncolor if ncolor < per_row else per_row
     nrows = int(np.ceil(ncolor / per_row))
-    size_x = 5 * per_row if size_x is None else size_x
-    size_y = 3 * nrows if size_y is None else size_y
+    size_x = 5 * per_row if size_x is None else size_x # Fixme: see above
+    size_y = 3 * nrows if size_y is None else size_y # Fixme: see above
     fig, axs = plt.subplots(nrows, per_row, figsize=(size_x, size_y), dpi=dpi)
     xy = dataset.obsm['spatial']
     x = xy[:, 0]
@@ -101,6 +103,7 @@ def embedding(dataset, color, title=None, size_x=None, size_y=None,
     for ax in axs:
         ax.axis('off')
 
+    # plot mapped expression values per gene
     for i, g in enumerate(color):
         if g in dataset.var_names:
             values = dataset[:, g].X
