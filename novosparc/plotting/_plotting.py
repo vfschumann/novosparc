@@ -80,7 +80,7 @@ def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
 
 
 def embedding(dataset, color, title=None, size_x=None, size_y=None,
-                          pt_size=10, tit_size=15, dpi=100): # Fixme: all of this is fixed too - why??? Fix pls
+                          pt_size=10, tit_size=15, dpi=100):
     """
     Plots fields (color) of Scanpy AnnData object on spatial coordinates
     dataset -- Scanpy AnnData with 'spatial' matrix in obsm containing the spatial coordinates of the tissue
