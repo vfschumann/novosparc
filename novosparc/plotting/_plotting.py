@@ -79,8 +79,8 @@ def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
         plt.show()
 
 
-def embedding(dataset, color, title=None, size_x=None, size_y=None,
-                          pt_size=10, tit_size=15, dpi=100):
+def embedding(dataset, color, title=None, colorbarlabel = 'probability or UMI count', size_x=None, size_y=None,
+              pt_size=10, tit_size=15, dpi=100):
     """
     Plots fields (color) of Scanpy AnnData object on spatial coordinates
     dataset -- Scanpy AnnData with 'spatial' matrix in obsm containing the spatial coordinates of the tissue
@@ -93,7 +93,7 @@ def embedding(dataset, color, title=None, size_x=None, size_y=None,
     per_row = 3 # Fixme: why is this hardcoded anyway? make it dynamic pls
     per_row = ncolor if ncolor < per_row else per_row
     nrows = int(np.ceil(ncolor / per_row))
-    size_x = 5 * per_row if size_x is None else size_x # Fixme: see above
+    size_x = 5 * per_row if size_x is None else size_x # Fixme: this breaks when plotting multiple plots
     size_y = 3 * nrows if size_y is None else size_y # Fixme: see above
     fig, axs = plt.subplots(nrows, per_row, figsize=(size_x, size_y), dpi=dpi)
     xy = dataset.obsm['spatial']
@@ -113,6 +113,7 @@ def embedding(dataset, color, title=None, size_x=None, size_y=None,
             continue
         axs[i].scatter(x, y, c=np.array(values), s=pt_size)
         axs[i].set_title(title[i], size=tit_size)
+        axs[i].colorbar(label=colorbarlabel)
 
     plt.show()
     plt.tight_layout()
