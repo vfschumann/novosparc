@@ -118,7 +118,7 @@ def embedding(dataset, color, title=None, colorbarlabel = 'probability or UMI co
     plt.show()
     plt.tight_layout()
     # fixme: Why doesn't this return anything? You can't do anything with a function like that...cm on....
-    print("return a figure object")
+    print("return another figure object")
     return fig
 
 def plot_histogram_intestine(mean_exp_new_dist, folder):
