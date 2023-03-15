@@ -116,6 +116,9 @@ def embedding(dataset, color, title=None, size_x=None, size_y=None,
 
     plt.show()
     plt.tight_layout()
+    # fixme: Why doesn't this return anything? You can't do anything with a function like that...cm on....
+    print("return a figure object")
+    return fig
 
 def plot_histogram_intestine(mean_exp_new_dist, folder):
     plt.figure(figsize=(5, 5))
