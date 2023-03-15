@@ -111,9 +111,10 @@ def embedding(dataset, color, title=None, colorbarlabel = 'probability or UMI co
             values = dataset.obs[g]
         else:
             continue
-        axs[i].scatter(x, y, c=np.array(values), s=pt_size)
+        im = axs[i].scatter(x, y, c=np.array(values), s=pt_size)
         axs[i].set_title(title[i], size=tit_size)
-        axs[i].colorbar(label=colorbarlabel)
+        fig.colorbar(im, ax=axs[i])
+    fig.colorbar(label=colorbarlabel)
 
     plt.show()
     plt.tight_layout()
