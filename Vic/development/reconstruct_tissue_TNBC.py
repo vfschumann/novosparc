@@ -41,6 +41,10 @@ if __name__ == '__main__':
     # for plotting
     gene_list_to_plot = None
 
+    # output
+    filename_tissue = "tissue.pkl" # ToDo include parameter
+    filename_tissue_gw = "tissue_gw.pkl" # ToDo include parameter
+
     #######################################
     # 2. Read the dataset and subsample ###
     #######################################
@@ -126,13 +130,22 @@ if __name__ == '__main__':
     # 4. Save the results and plot some genes ###
     #############################################
 
-    # save the tissue to file
+    # save the tissue and tissue.gw to file
     print("save the tissue obj")
     # create a pickle file
-    tissue_file = os.path.join(output_folder, "tissue_AllMarkerCellsLocations_MarkerBasedAtlas.pkl")
+    tissue_file = os.path.join(output_folder, filename_tissue)
     picklefile = open(tissue_file, 'wb')
     # pickle the dictionary and write it to file
     pickle.dump(tissue, picklefile)
+    # close the file
+    picklefile.close()
+
+    print("save the tissue.gw only")
+    # create a pickle file
+    tissue_gw_file = os.path.join(output_folder, filename_tissue_gw)
+    picklefile = open(tissue_gw_file, 'wb')
+    # pickle the dictionary and write it to file
+    pickle.dump(tissue.gw, picklefile)
     # close the file
     picklefile.close()
 
