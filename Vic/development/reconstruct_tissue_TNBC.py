@@ -25,13 +25,13 @@ if __name__ == '__main__':
     output_folder = os.path.join(data_dir, 'output')  # folder to save the results, plots etc.
 
     # 1.1. set subsample parameter when used
-    min_num_cells = 500
-    max_num_cells = 1000
+    min_num_cells = 4000
+    max_num_cells = 5000
 
-    n_loc_atlas = 500
+    n_loc_atlas = 2000
 
     # for linear assumption
-    marker_subset = 5
+    marker_subset = 400
     alpha_parameter = 0.8
 
     # for neighbor assumption
@@ -42,8 +42,9 @@ if __name__ == '__main__':
     gene_list_to_plot = None
 
     # output
-    filename_tissue = "tissue.pkl" # ToDo include parameter
-    filename_tissue_gw = "tissue_gw.pkl" # ToDo include parameter
+    filename_tissue = f"tissue_maxCells{max_num_cells}_loc{n_loc_atlas}_run4.pkl"
+    filename_tissue_gw = f"tissue_gwmaxCells{max_num_cells}_loc{n_loc_atlas}_run4.pkl"
+    selected_cells_name = f"tissue_maxCells{max_num_cells}_loc{n_loc_atlas}_run4_cellsselected.csv"
 
     #######################################
     # 2. Read the dataset and subsample ###
@@ -98,11 +99,8 @@ if __name__ == '__main__':
     #########################################
     # 3. Setup and spatial reconstruction ###
     #########################################
-    print("Setting up reconstruction")
     tissue = novosparc.cm.Tissue(dataset=dataset, locations=locations,
                                  output_folder=output_folder) # create a tissue object
-    tissue.setup_reconstruction(num_neighbors_s = num_neighbors_s,
-                                num_neighbors_t = num_neighbors_t)
 
     # Optional: use marker genes
     print("Getting marker genes for reconstruction atlas")
@@ -110,7 +108,7 @@ if __name__ == '__main__':
     markers = list(set(atlas_genes).intersection(gene_names))
 
     # Optional: subset marker
-    markers = random.sample(markers, marker_subset)
+   # markers = random.sample(markers, marker_subset)
 
     # build marker list
     atlas_matrix = atlas.to_df()[markers].values
@@ -118,8 +116,10 @@ if __name__ == '__main__':
     markers_to_use = np.concatenate(markers_idx.loc[markers].values)
 
     # reconstruction using both assumptions
-    tissue.setup_reconstruction(markers_to_use=markers_to_use,
-                                atlas_matrix=atlas_matrix)
+    tissue.setup_reconstruction(atlas_matrix=atlas_matrix,
+                                markers_to_use=markers_to_use,
+                                num_neighbors_s=num_neighbors_s,
+                                num_neighbors_t=num_neighbors_t)
 
     # alpha parameter controls the reconstruction. Set 0 for de novo, between
     # 0 and 1 in case markers are available.
@@ -149,10 +149,16 @@ if __name__ == '__main__':
     # close the file
     picklefile.close()
 
+    print("save selected cells to txt")
+    np.savetxt(selected_cells_name, cells_selected, delimiter=',')
+
+    # Todo: add a txt file output with cell,loc and gene numbers
+
     # plot some genes and save them
 
     if gene_list_to_plot is not None:
         print("make some plots and save them")
-        novosparc.io.save_gene_pattern_plots(tissue=tissue, gene_list_to_plot=gene_list_to_plot,
-                                             folder=output_folder)
+        novosparc.pl.embedding(atlas, gene_list_to_plot)
+
+
     print("done")
